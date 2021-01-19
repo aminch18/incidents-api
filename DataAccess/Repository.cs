@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Cosmos;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Incidents_Api.DataAccess
@@ -8,9 +9,9 @@ namespace Incidents_Api.DataAccess
     public interface IRepository
     {
         Task<IEnumerable<Incident>> GetIncidentsAsync();
-        Task<Incident> GetIncidentByIdAsync(string id, string partitionKey);
-        Task<bool> UpsertIncidentAsync(Incident incident);
-        Task<bool> DeleteIncidentAsync(string id, string partitionKey);
+        Task<Incident> GetIncidentByIdAsync(string id);
+        Task<object> UpsertIncidentAsync(Incident incident);
+        Task<object> DeleteIncidentAsync(string id, string partitionKey);
     }
 
     public class Repository : IRepository
@@ -35,41 +36,45 @@ namespace Incidents_Api.DataAccess
             {
                 foreach (var item in await feedIterator.ReadNextAsync())
                 {
-                    {
-                        incidents.Add(item);
-                    }
+                    incidents.Add(item);
                 }
             }
 
             return incidents;
         }
 
-        public async Task<Incident> GetIncidentByIdAsync(string id, string partitionKey)
+        public async Task<Incident> GetIncidentByIdAsync(string id)
         {
-            var itemResponse = await _container.ReadItemAsync<Incident>(id, new PartitionKey(partitionKey));
+            var query = "SELECT * FROM c WHERE c.id = @id ";
+            QueryDefinition queryDefinition = new QueryDefinition(query).WithParameter("@id", id);
 
-            return (itemResponse.StatusCode == System.Net.HttpStatusCode.OK
-                 || itemResponse.StatusCode == System.Net.HttpStatusCode.Created
-                 || itemResponse.StatusCode == System.Net.HttpStatusCode.Accepted) ? itemResponse.Resource : null;
+            var readResult = await (_container.GetItemQueryIterator<Incident>(queryDefinition)).ReadNextAsync();
 
+            return readResult.AsEnumerable().FirstOrDefault();
         }
 
-        public async Task<bool> UpsertIncidentAsync(Incident incident)
+        public async Task<object> UpsertIncidentAsync(Incident incident)
         {
+            incident.CreatedDateTime = DateTime.UtcNow;
             var itemResponse = await _container.UpsertItemAsync(incident, new PartitionKey(incident.WorkerId));
 
-            return itemResponse.StatusCode == System.Net.HttpStatusCode.OK
+            var isSuccessAction =  itemResponse.StatusCode == System.Net.HttpStatusCode.OK
                  || itemResponse.StatusCode == System.Net.HttpStatusCode.Created
                  || itemResponse.StatusCode == System.Net.HttpStatusCode.Accepted;
+
+            return new { IsSuccess = isSuccessAction, Incidence = incident, StatusCode = System.Net.HttpStatusCode.Created };
         }
 
-        public async Task<bool> DeleteIncidentAsync(string id, string partitionKey)
+        public async Task<object> DeleteIncidentAsync(string id, string partitionKey)
         {
             var itemResponse = await _container.DeleteItemAsync<Incident>(id, new PartitionKey(partitionKey));
 
-            return itemResponse.StatusCode == System.Net.HttpStatusCode.OK
+            var isSuccessAction = itemResponse.StatusCode == System.Net.HttpStatusCode.OK
                  || itemResponse.StatusCode == System.Net.HttpStatusCode.Created
-                 || itemResponse.StatusCode == System.Net.HttpStatusCode.Accepted;
+                 || itemResponse.StatusCode == System.Net.HttpStatusCode.Accepted
+                 || itemResponse.StatusCode == System.Net.HttpStatusCode.NoContent;
+
+            return new { IsSuccess = isSuccessAction, DeletedIncidenceId = id, StatusCode = System.Net.HttpStatusCode.Accepted };
         }
     }
 }

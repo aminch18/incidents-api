@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29911.84
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Incidents-Api", "Incidents-Api.csproj", "{B2DF3E8D-E66F-4D23-9CAB-E0FABF6EADC4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Incidents-Api", "Incidents-Api.csproj", "{B2DF3E8D-E66F-4D23-9CAB-E0FABF6EADC4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8FBCC3BE-6716-4CD1-9584-B222394099D6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,6 +20,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B2DF3E8D-E66F-4D23-9CAB-E0FABF6EADC4} = {8FBCC3BE-6716-4CD1-9584-B222394099D6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8A502D4E-43AD-4944-B47F-B0C26944AAAE}

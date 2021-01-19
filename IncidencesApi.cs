@@ -30,14 +30,14 @@ namespace Incidents_Api
             return new OkObjectResult(JsonConvert.SerializeObject(await _repository.GetIncidentsAsync()));
         }
 
-        //[FunctionName("Incident_GetByWorkerId")]
-        //public async Task<IActionResult> GetByPartitionKeyAsync(
-        //   [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "incidents/{workerId}")] HttpRequest req,
-        //   ILogger log)
-        //{
-
-        //    return new OkObjectResult(JsonConvert.SerializeObject(await _repository.GetIncidentByIdAsync()));
-        //}
+        [FunctionName("Incident_GetByWorkerId")]
+        public async Task<IActionResult> GetByPartitionKeyAsync(
+           [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "incidents/{id}")] HttpRequest req,
+           ILogger log, string id)
+        {
+            var incident = await _repository.GetIncidentByIdAsync(id);
+            return new OkObjectResult(JsonConvert.SerializeObject(incident));
+        }
 
         [FunctionName("Incident_Create")]
         public async Task<IActionResult> CreateAsync(
@@ -60,13 +60,12 @@ namespace Incidents_Api
             return new OkObjectResult(JsonConvert.SerializeObject(await _repository.UpsertIncidentAsync(incident)));
         }
 
-        //[FunctionName("Incident_Delete")]
-        //public async Task<IActionResult> DeleteAsync(
-        //   [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "/incidents/{id}")] HttpRequest req,
-        //   ILogger log)
-        //{
-        //    var incident = await _repository.GetIncidentByIdAsync()
-        //    return new OkObjectResult(JsonConvert.SerializeObject(await _repository.DeleteIncidentAsync()));
-        //}
+        [FunctionName("Incident_Delete")]
+        public async Task<IActionResult> DeleteAsync(
+           [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "incidents/{id}/{workerId}")] HttpRequest req,
+           ILogger log, string id, string workerId)
+        {
+            return new OkObjectResult(JsonConvert.SerializeObject(await _repository.DeleteIncidentAsync(id, workerId)));
+        }
     }
 }
